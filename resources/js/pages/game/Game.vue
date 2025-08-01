@@ -12,6 +12,12 @@ const dealerLose = ref(false);
 const itIsADraw = ref(false);
 const playAgain = ref(false);
 const stay = ref(false);
+const playerBalance = ref(100);
+const playerBet = ref(100);
+const minBet = 5;
+const maxBet = ref(100);
+const canPlay = ref(true);
+const betStep = 5;
 
 const cardValues = ref<Record<string, array>>({
     1: 1,
@@ -37,7 +43,6 @@ function drawTwoFirstCards() {
     playerCards.value = [firstCard, secondCard];
 
     playerCardsValue.value = countCardValue(playerCards);
-    console.log(playerCardsValue.value);
 }
 
 async function playerDrawACard() {
@@ -47,6 +52,8 @@ async function playerDrawACard() {
     playerLose.value = checkIfLose(playerCardsValue);
 
     if (playerLose.value) {
+        playerBalance.value -= playerBet.value;
+        checkIfBalanceEnoughToPlay();
         playAgain.value = true;
     }
 }
@@ -64,14 +71,20 @@ async function drawDealerCards() {
         await dealerDrawACard();
     }
 
-    if (dealerCardsValue.value <= 21 && dealerCardsValue.value > playerCardsValue.value) {
-        playerLose.value = true;
-    }else if (dealerCardsValue.value <= 21 && dealerCardsValue.value < playerCardsValue.value) {
-        dealerLose.value = true;
-    }else if (dealerCardsValue.value === playerCardsValue.value) {
-        itIsADraw.value = true;
+    if (dealerLose.value) {
+        playerBalance.value += playerBet.value;
     }
 
+    if (dealerCardsValue.value <= 21 && dealerCardsValue.value > playerCardsValue.value) {
+        playerLose.value = true;
+        playerBalance.value -= playerBet.value;
+    } else if (dealerCardsValue.value <= 21 && dealerCardsValue.value < playerCardsValue.value) {
+        dealerLose.value = true;
+        playerBalance.value += playerBet.value;
+    } else if (dealerCardsValue.value === playerCardsValue.value) {
+        itIsADraw.value = true;
+    }
+    checkIfBalanceEnoughToPlay();
     playAgain.value = true;
 }
 
@@ -84,7 +97,9 @@ function startNewGame() {
     itIsADraw.value = false;
     playAgain.value = false;
     stay.value = false;
+    setMaxBetAvailable();
 }
+
 async function dealerDrawACard() {
     dealerCards.value.push(getRandomCard());
     dealerCardsValue.value = countCardValue(dealerCards);
@@ -125,8 +140,39 @@ function checkIfLose(cardsValue: object) {
     return cardsValue.value > 21;
 }
 
-function sleep(ms :number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+function addBet() {
+    if (playerBet.value >= maxBet.value) {
+        return;
+    }
+    playerBet.value += betStep;
+}
+
+function reduceBet() {
+    if (playerBet.value <= betStep) {
+        return;
+    }
+    playerBet.value -= betStep;
+}
+
+function checkIfBalanceEnoughToPlay() {
+    if (playerBalance.value < minBet) {
+        canPlay.value = false;
+        return;
+    }
+
+    canPlay.value = true;
+}
+
+function setMaxBetAvailable() {
+    maxBet.value = playerBalance.value;
+
+    if (playerBet.value > playerBalance.value) {
+        playerBet.value = playerBalance.value;
+    }
+}
+
+function sleep(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 onMounted(() => {
@@ -136,6 +182,14 @@ onMounted(() => {
 
 <template>
     <div class="flex h-screen flex-col">
+        <div>
+            <div>Balance: {{ playerBalance }}</div>
+            <div>Bet: {{ playerBet }}</div>
+            <div>
+                <Button @click="addBet" class="m-1 p-2">+</Button>
+                <Button @click="reduceBet" class="m-1 p-2">-</Button>
+            </div>
+        </div>
         <div class="flex h-1/2 items-center justify-center">
             <div class="flex">
                 <div v-for="(card, index) in dealerCards" :key="index">
@@ -143,16 +197,15 @@ onMounted(() => {
                 </div>
             </div>
         </div>
-        <div v-if="playerLose" class="flex justify-center items-center m-2">
-            You lost!
+        <div v-if="playerLose" class="m-2 flex items-center justify-center">
+            <div>
+                <div>You lost!</div>
+                <div v-if="!canPlay">No balance!</div>
+            </div>
         </div>
-        <div v-if="dealerLose" class="flex justify-center items-center m-2">
-            You win!
-        </div>
-        <div v-if="itIsADraw" class="flex justify-center items-center m-2">
-            It's a draw!
-        </div>
-        <div v-if="playAgain" class="flex justify-center items-center m-2">
+        <div v-if="dealerLose" class="m-2 flex items-center justify-center">You win!</div>
+        <div v-if="itIsADraw" class="m-2 flex items-center justify-center">It's a draw!</div>
+        <div v-if="playAgain && canPlay" class="m-2 flex items-center justify-center">
             <Button @click="startNewGame">Play again</Button>
         </div>
         <div class="flex h-1/2 items-center justify-center">
@@ -161,7 +214,7 @@ onMounted(() => {
                     <div class="rounded-sm border bg-white p-4 text-black">{{ card }}</div>
                 </div>
             </div>
-            <div class="flex justify-between m-2">
+            <div class="m-2 flex justify-between">
                 <div class="m-2">
                     <Button :disabled="stay || playerLose" @click="playerDrawACard">Draw a card</Button>
                 </div>
