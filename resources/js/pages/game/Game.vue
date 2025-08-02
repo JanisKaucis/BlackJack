@@ -54,6 +54,7 @@ async function playerDrawACard() {
         playerBalance.value -= playerBet.value;
         checkIfBalanceEnoughToPlay();
         gameHasStarted.value = false;
+        setMaxBetAvailable();
     }
 }
 
@@ -85,6 +86,7 @@ async function drawDealerCards() {
     }
     checkIfBalanceEnoughToPlay();
     gameHasStarted.value = false;
+    setMaxBetAvailable();
 }
 
 function startNewGame() {
@@ -96,7 +98,6 @@ function startNewGame() {
     dealerLose.value = false;
     itIsADraw.value = false;
     stay.value = false;
-    setMaxBetAvailable();
 }
 
 async function dealerDrawACard() {
