@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { onMounted, ref } from 'vue';
 
-const allCards = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+const allCards = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 const playerCards = ref<string[]>([]);
 const dealerCards = ref<string[]>([]);
 const playerCardsValue = ref(0);
@@ -10,7 +10,7 @@ const dealerCardsValue = ref(0);
 const playerLose = ref(false);
 const dealerLose = ref(false);
 const itIsADraw = ref(false);
-const playAgain = ref(false);
+const gameHasStarted = ref(false);
 const stay = ref(false);
 const playerBalance = ref(100);
 const playerBet = ref(5);
@@ -20,7 +20,6 @@ const canPlay = ref(true);
 const betStep = 5;
 
 const cardValues = ref<Record<string, array>>({
-    1: 1,
     2: 2,
     3: 3,
     4: 4,
@@ -54,7 +53,7 @@ async function playerDrawACard() {
     if (playerLose.value) {
         playerBalance.value -= playerBet.value;
         checkIfBalanceEnoughToPlay();
-        playAgain.value = true;
+        gameHasStarted.value = false;
     }
 }
 
@@ -85,17 +84,17 @@ async function drawDealerCards() {
         itIsADraw.value = true;
     }
     checkIfBalanceEnoughToPlay();
-    playAgain.value = true;
+    gameHasStarted.value = false;
 }
 
 function startNewGame() {
+    gameHasStarted.value = true;
     drawTwoFirstCards();
     dealerCards.value = [];
     dealerCardsValue.value = 0;
     playerLose.value = false;
     dealerLose.value = false;
     itIsADraw.value = false;
-    playAgain.value = false;
     stay.value = false;
     setMaxBetAvailable();
 }
@@ -176,7 +175,7 @@ function sleep(ms: number) {
 }
 
 onMounted(() => {
-    drawTwoFirstCards();
+    // drawTwoFirstCards();
 });
 </script>
 
@@ -185,7 +184,7 @@ onMounted(() => {
         <div>
             <div>Balance: {{ playerBalance }}</div>
             <div>Bet: {{ playerBet }}</div>
-            <div>
+            <div v-if="!gameHasStarted">
                 <Button @click="addBet" class="m-1 p-2">+</Button>
                 <Button @click="reduceBet" class="m-1 p-2">-</Button>
             </div>
@@ -205,8 +204,8 @@ onMounted(() => {
         </div>
         <div v-if="dealerLose" class="m-2 flex items-center justify-center">You win!</div>
         <div v-if="itIsADraw" class="m-2 flex items-center justify-center">It's a draw!</div>
-        <div v-if="playAgain && canPlay" class="m-2 flex items-center justify-center">
-            <Button @click="startNewGame">Play again</Button>
+        <div v-if="!gameHasStarted && canPlay" class="m-2 flex items-center justify-center">
+            <Button @click="startNewGame">Start game</Button>
         </div>
         <div class="flex h-1/2 items-center justify-center">
             <div class="flex">
@@ -214,7 +213,7 @@ onMounted(() => {
                     <div class="rounded-sm border bg-white p-4 text-black">{{ card }}</div>
                 </div>
             </div>
-            <div class="m-2 flex justify-between">
+            <div v-if="gameHasStarted" class="m-2 flex justify-between">
                 <div class="m-2">
                     <Button :disabled="stay || playerLose" @click="playerDrawACard">Draw a card</Button>
                 </div>
