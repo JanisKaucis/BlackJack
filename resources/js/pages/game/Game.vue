@@ -178,7 +178,7 @@ function sleep(ms: number) {
 </script>
 
 <template>
-    <div class="flex h-screen flex-col">
+    <div class="flex h-screen flex-col bg-gray-500">
         <div>
             <div>Balance: {{ playerBalance }}</div>
             <div>Bet: {{ playerBet }}</div>
