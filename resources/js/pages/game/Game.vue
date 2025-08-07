@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
-import { onMounted, ref } from 'vue';
+import { ref } from 'vue';
 
 const allCards = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 const playerCards = ref<string[]>([]);
@@ -174,12 +174,11 @@ function setMaxBetAvailable() {
 function sleep(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
-
 </script>
 
 <template>
-    <div class="flex h-screen flex-col bg-gray-500">
-        <div>
+    <div class="grid h-screen grid-cols-3 bg-gray-500">
+        <div class="col-span-1">
             <div>Balance: {{ playerBalance }}</div>
             <div>Bet: {{ playerBet }}</div>
             <div v-if="!gameHasStarted">
@@ -187,33 +186,42 @@ function sleep(ms: number) {
                 <Button @click="reduceBet" class="m-1 p-2">-</Button>
             </div>
         </div>
-        <div class="m-2 flex items-center justify-center">
-            <p>Dealer points: {{ dealerCardsValue }}</p>
-        </div>
-        <div class="flex h-1/2 items-center justify-center">
-            <div class="flex">
-                <div v-for="(card, index) in dealerCards" :key="index">
-                    <div class="rounded-sm border bg-white p-4 text-black">{{ card }}</div>
+        <div class="col-span-1 flex flex-col">
+            <div class="m-2 flex items-center justify-center">
+                <p>Dealer points: {{ dealerCardsValue }}</p>
+            </div>
+            <div class="flex h-1/2 items-center justify-center">
+                <div class="flex">
+                    <div v-for="(card, index) in dealerCards" :key="index">
+                        <div class="rounded-sm border bg-white p-4 text-black">{{ card }}</div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div v-if="playerLose" class="m-2 flex items-center justify-center">
-            <div>
-                <div>You lost!</div>
-                <div v-if="!canPlay">No balance!</div>
-            </div>
-        </div>
-        <div v-if="dealerLose" class="m-2 flex items-center justify-center">You win!</div>
-        <div v-if="itIsADraw" class="m-2 flex items-center justify-center">It's a draw!</div>
-        <div v-if="!gameHasStarted && canPlay" class="m-2 flex items-center justify-center">
-            <Button @click="startNewGame">Start game</Button>
-        </div>
-        <div class="flex h-1/2 items-center justify-center">
-            <div class="flex">
-                <div v-for="(card, index) in playerCards" :key="index">
-                    <div class="rounded-sm border bg-white p-4 text-black">{{ card }}</div>
+            <div class="m-2 flex items-center justify-center">
+                <div v-if="playerLose">
+                    <div>You lost!</div>
+                    <div v-if="!canPlay">No balance!</div>
                 </div>
             </div>
+            <div class="h-1/2">
+                <div v-if="dealerLose" class="m-2 flex items-center justify-center">You win!</div>
+                <div v-if="itIsADraw" class="m-2 flex items-center justify-center">It's a draw!</div>
+                <div v-if="!gameHasStarted && canPlay" class="m-2 flex items-center justify-center">
+                    <Button @click="startNewGame">Start game</Button>
+                </div>
+            </div>
+            <div class="flex h-1/2 items-center justify-center">
+                <div class="flex">
+                    <div v-for="(card, index) in playerCards" :key="index">
+                        <div class="rounded-sm border bg-white p-4 text-black">{{ card }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="m-2 flex items-center justify-center">
+                <p>Player points: {{ playerCardsValue }}</p>
+            </div>
+        </div>
+        <div class="flex items-end justify-start">
             <div v-if="gameHasStarted" class="m-2 flex justify-between">
                 <div class="m-2">
                     <Button :disabled="stay || playerLose" @click="playerDrawACard">Hit</Button>
@@ -222,9 +230,6 @@ function sleep(ms: number) {
                     <Button :disabled="stay || playerLose" @click="stayWithHand">Stand</Button>
                 </div>
             </div>
-        </div>
-        <div class="m-2 flex items-center justify-center">
-            <p>Player points: {{ playerCardsValue }}</p>
         </div>
     </div>
 </template>
