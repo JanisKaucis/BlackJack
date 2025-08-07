@@ -59,10 +59,9 @@ async function playerDrawACard() {
 }
 
 async function drawDealerCards() {
-    const firstCard = getRandomCard();
     const secondCard = getRandomCard();
 
-    dealerCards.value = [firstCard, secondCard];
+    dealerCards.value.push(secondCard);
 
     dealerCardsValue.value = countCardValue(dealerCards);
 
@@ -94,6 +93,7 @@ function startNewGame() {
     drawTwoFirstCards();
     dealerCards.value = [];
     dealerCardsValue.value = 0;
+    dealerDrawACard();
     playerLose.value = false;
     dealerLose.value = false;
     itIsADraw.value = false;
@@ -187,6 +187,9 @@ function sleep(ms: number) {
                 <Button @click="reduceBet" class="m-1 p-2">-</Button>
             </div>
         </div>
+        <div class="m-2 flex items-center justify-center">
+            <p>Dealer points: {{ dealerCardsValue }}</p>
+        </div>
         <div class="flex h-1/2 items-center justify-center">
             <div class="flex">
                 <div v-for="(card, index) in dealerCards" :key="index">
@@ -213,12 +216,15 @@ function sleep(ms: number) {
             </div>
             <div v-if="gameHasStarted" class="m-2 flex justify-between">
                 <div class="m-2">
-                    <Button :disabled="stay || playerLose" @click="playerDrawACard">Draw a card</Button>
+                    <Button :disabled="stay || playerLose" @click="playerDrawACard">Hit</Button>
                 </div>
                 <div class="m-2">
-                    <Button :disabled="stay || playerLose" @click="stayWithHand">Stay</Button>
+                    <Button :disabled="stay || playerLose" @click="stayWithHand">Stand</Button>
                 </div>
             </div>
+        </div>
+        <div class="m-2 flex items-center justify-center">
+            <p>Player points: {{ playerCardsValue }}</p>
         </div>
     </div>
 </template>
