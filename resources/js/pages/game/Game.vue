@@ -2,7 +2,8 @@
 import { Button } from '@/components/ui/button';
 import { ref } from 'vue';
 
-const allCards = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+const cardValues = ref<Record<string, array>>({
+    2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 10: 10, J: 10, Q: 10, K: 10, A: 11, });
 const playerCards = ref<string[]>([]);
 const dealerCards = ref<string[]>([]);
 const playerCardsValue = ref(0);
@@ -18,22 +19,6 @@ const minBet = 5;
 const maxBet = ref(100);
 const canPlay = ref(true);
 const betStep = 5;
-
-const cardValues = ref<Record<string, array>>({
-    2: 2,
-    3: 3,
-    4: 4,
-    5: 5,
-    6: 6,
-    7: 7,
-    8: 8,
-    9: 9,
-    10: 10,
-    J: 10,
-    Q: 10,
-    K: 10,
-    A: 11,
-});
 
 function drawTwoFirstCards() {
     const firstCard = getRandomCard();
@@ -114,7 +99,8 @@ function stayWithHand() {
 }
 
 function getRandomCard() {
-    return allCards[Math.floor(Math.random() * allCards.length)];
+    const keys = Object.keys(cardValues.value);
+    return keys[Math.floor(Math.random() * keys.length)];
 }
 
 function countCardValue(playerCards: object) {
